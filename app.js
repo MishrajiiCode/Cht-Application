@@ -45,6 +45,21 @@ let unsubscribeChatPreviews = null;
 let peerConnection;
 let localStream;
 
+// App Configuration
+const APP_CONFIG = {
+  version: '1.2.0',
+  releaseNotes: {
+    '1.2.0': {
+      title: "What's New in Sync v1.2.0",
+      features: [
+        "**App Renamed to 'Sync'**: The application has a new name and identity!",
+        "**'About' Section**: Learn more about the app, its developer, and future goals in the new 'About' section, accessible from the sidebar.",
+        "**'What's New' Pop-ups**: You'll now see this message when new features are released!",
+      ]
+    }
+  }
+};
+
 // ==========================================
 // UTILITY FUNCTIONS
 // ==========================================
@@ -226,6 +241,9 @@ async function initializeUserSession(userId) {
     // Load users and chats
     await loadUsers();
     
+    // Check for app updates and show 'What's New' modal if needed
+    checkVersionAndShowUpdate();
+
     showLoading(false);
     
   } catch (error) {
@@ -922,6 +940,57 @@ async function saveSettings() {
   }
 }
 
+// ==========================================
+// ABOUT & WHAT'S NEW MODAL FUNCTIONS
+// ==========================================
+
+function showAboutModal() {
+  document.getElementById('aboutModal').style.display = 'flex';
+}
+
+function hideAboutModal() {
+  document.getElementById('aboutModal').style.display = 'none';
+}
+
+function checkVersionAndShowUpdate() {
+  const lastSeenVersion = localStorage.getItem('lastSeenVersion');
+  const currentVersion = APP_CONFIG.version;
+
+  if (lastSeenVersion !== currentVersion) {
+    const release = APP_CONFIG.releaseNotes[currentVersion];
+    if (release) {
+      showWhatsNewModal(release);
+    }
+  }
+}
+
+function showWhatsNewModal(release) {
+  const modal = document.getElementById('whatsNewModal');
+  const featuresHtml = release.features.map(feature => `<li>${feature.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')}</li>`).join('');
+
+  modal.innerHTML = `
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>${release.title}</h2>
+        </div>
+        <div class="modal-body">
+            <p>Here are the latest updates to your favorite chat app:</p>
+            <ul>
+                ${featuresHtml}
+            </ul>
+        </div>
+        <div class="modal-footer">
+            <button onclick="hideWhatsNewModal()" class="btn btn--primary">Got it!</button>
+        </div>
+    </div>
+  `;
+  modal.style.display = 'flex';
+}
+
+function hideWhatsNewModal() {
+  document.getElementById('whatsNewModal').style.display = 'none';
+  localStorage.setItem('lastSeenVersion', APP_CONFIG.version);
+}
 
 // ==========================================
 // VIDEO CALL FUNCTIONS (WebRTC)
