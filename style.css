@@ -1541,7 +1541,7 @@ select.form-control {
 /* Scrollbar Styles */
 .user-list::-webkit-scrollbar,
 .messages-container::-webkit-scrollbar {
-  width: 6px;
+  width: 10px;
 }
 
 .user-list::-webkit-scrollbar-track,
