@@ -70,7 +70,9 @@
                 <!-- Empty State -->
                 <div id="emptyState" class="empty-state">
                     <div class="empty-state-content">
-                        <span class="empty-icon">💬</span>
+                        <div class="empty-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                        </div>
                         <h3>Select a user to start chatting</h3>
                         <p>Choose from the list on the left to begin a conversation</p>
                     </div>
@@ -84,7 +86,10 @@
                             <div id="chatAvatar" class="avatar"></div>
                             <div>
                                 <h4 id="chatUserName">User Name</h4>
-                                <p id="typingIndicator" style="font-size: small; font-style: italic; display: none;">Typing...</p>
+                                <div class="chat-status-container">
+                                    <p id="chatUserStatus" class="chat-user-status"></p>
+                                    <p id="typingIndicator" class="typing-indicator" style="display: none;">Typing...</p>
+                                </div>
                             </div>
                         </div>
                         <div class="chat-header-actions">
@@ -94,17 +99,24 @@
 
                     <div id="messagesContainer" class="messages-container">
                         <!-- Messages will appear here -->
+                        <button id="scrollToBottomBtn" class="scroll-to-bottom-btn" style="display: none;" title="Scroll to bottom">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
+                        </button>
                     </div>
 
                     <div class="message-input-container">
                         <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
-                        <button onclick="document.getElementById('imageInput').click()" class="btn btn--secondary btn--icon" title="Send Image">📎</button>
+                        <button onclick="document.getElementById('imageInput').click()" class="btn btn--secondary btn--icon" title="Send Image">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+                        </button>
                         
-                        <button id="emojiButton" class="btn btn--secondary btn--icon" title="Add Emoji">😀</button>
+                        <button id="emojiButton" class="btn btn--secondary btn--icon" title="Add Emoji">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M8 14s1.5 2 4 2 4-2 4-2"></path><line x1="9" y1="9" x2="9.01" y2="9"></line><line x1="15" y1="9" x2="15.01" y2="9"></line></svg>
+                        </button>
                         <div id="emojiPicker" class="emoji-picker" style="display: none;"></div>
 
                         <input type="text" id="messageInput" class="message-input" placeholder="Type a message..." onkeypress="handleMessageKeyPress(event)">
-                        <button onclick="sendMessage()" class="btn btn--primary send-btn" id="sendButton">Send</button>
+                        <button onclick="sendMessage({ text: document.getElementById('messageInput').value })" class="btn btn--primary send-btn" id="sendButton">Send</button>
                     </div>
                 </div>
             </div>
@@ -147,7 +159,9 @@
                 <hr class="divider">
                 <div class="form-group">
                     <label class="form-label">Full Name</label>
-                    <input type="text" id="settingsName" class="form-control" disabled title="Your name cannot be changed.">
+                    <div id="settingsName" class="static-form-field" title="Your name is your unique identifier and cannot be changed.">
+                        <!-- Name will be populated by JS -->
+                    </div>
                 </div>
                 <hr class="divider">
                 <label class="form-label">Change PIN</label>
@@ -200,6 +214,7 @@
 
             </div>
             <div class="modal-footer">
+                <span id="appVersion" class="app-version"></span>
                 <button onclick="hideAboutModal()" class="btn btn--primary">Close</button>
             </div>
         </div>
