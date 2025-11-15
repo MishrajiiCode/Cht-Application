@@ -17,43 +17,19 @@
 
             <!-- Login Form -->
             <div id="loginForm" class="auth-form">
-                <h2>Login</h2>
+                <h2>Enter Chat</h2>
                 <div class="form-group">
-                    <label class="form-label">Email or Mobile</label>
-                    <input type="text" id="loginEmail" class="form-control" placeholder="Enter email or mobile" required>
+                    <label class="form-label">Name</label>
+                    <input type="text" id="loginName" class="form-control" placeholder="Enter your unique name" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Password</label>
-                    <input type="password" id="loginPassword" class="form-control" placeholder="Enter password" required>
+                    <label class="form-label">PIN</label>
+                    <input type="password" id="loginPin" class="form-control" placeholder="Enter 4-digit PIN" required maxlength="4" pattern="\d{4}" inputmode="numeric">
                 </div>
                 <div id="loginError" class="error-message"></div>
-                <button onclick="handleLogin()" class="btn btn--primary btn--full-width">Login</button>
-                <p class="auth-switch">Don't have an account? <a href="#" onclick="showRegisterForm()">Register here</a></p>
+                <button onclick="handleLoginOrRegister()" class="btn btn--primary btn--full-width">Enter / Register</button>
             </div>
 
-            <!-- Register Form -->
-            <div id="registerForm" class="auth-form" style="display: none;">
-                <h2>Register</h2>
-                <div class="form-group">
-                    <label class="form-label">Full Name</label>
-                    <input type="text" id="registerName" class="form-control" placeholder="Enter your name" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Mobile Number</label>
-                    <input type="tel" id="registerMobile" class="form-control" placeholder="+1234567890" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Email</label>
-                    <input type="email" id="registerEmail" class="form-control" placeholder="Enter your email" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">Password</label>
-                    <input type="password" id="registerPassword" class="form-control" placeholder="Create a password (min 6 characters)" required>
-                </div>
-                <div id="registerError" class="error-message"></div>
-                <button onclick="handleRegister()" class="btn btn--primary btn--full-width">Register</button>
-                <p class="auth-switch">Already have an account? <a href="#" onclick="showLoginForm()">Login here</a></p>
-            </div>
         </div>
     </div>
 
@@ -61,9 +37,12 @@
     <div id="chatScreen" class="chat-screen" style="display: none;">
         <!-- Chat Header -->
         <div class="chat-header">
-            <div class="header-left">
-                <h2>💬 Chat App</h2>
-                <span id="currentUserInfo" class="user-info"></span>
+            <div id="profileCard" class="profile-card">
+                <div id="headerAvatar" class="avatar"></div>
+                <div class="profile-card-info">
+                    <h4 id="headerUserName"></h4>
+                    <p id="headerUserPin" class="user-info"></p>
+                </div>
             </div>
             <button onclick="handleLogout()" class="btn btn--secondary btn--sm">Logout</button>
         </div>
@@ -74,6 +53,9 @@
             <div class="sidebar">
                 <div class="sidebar-header">
                     <h3>Conversations</h3>
+                    <button id="settingsButton" onclick="showSettingsModal()" class="btn btn--secondary btn--icon" title="Settings">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    </button>
                 </div>
                 <div id="userList" class="user-list">
                     <!-- Users will be loaded here -->
@@ -94,12 +76,16 @@
                 <!-- Active Chat -->
                 <div id="activeChat" style="display: none;">
                     <div class="chat-header-bar">
+                        <button id="backButton" class="btn btn--secondary btn--sm back-button" onclick="showUserListOnMobile()">Back</button>
                         <div class="chat-user-info">
-                            <div class="avatar">👤</div>
+                            <div id="chatAvatar" class="avatar"></div>
                             <div>
                                 <h4 id="chatUserName">User Name</h4>
-                                <p id="chatUserMobile" class="chat-user-mobile">+1234567890</p>
+                                <p id="typingIndicator" style="font-size: small; font-style: italic; display: none;">Typing...</p>
                             </div>
+                        </div>
+                        <div class="chat-header-actions">
+                            <button id="videoCallButton" onclick="startVideoCall()" class="btn btn--secondary btn--sm" disabled>Video Call</button>
                         </div>
                     </div>
 
@@ -108,8 +94,14 @@
                     </div>
 
                     <div class="message-input-container">
+                        <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
+                        <button onclick="document.getElementById('imageInput').click()" class="btn btn--secondary btn--icon" title="Send Image">📎</button>
+                        
+                        <button id="emojiButton" class="btn btn--secondary btn--icon" title="Add Emoji">😀</button>
+                        <div id="emojiPicker" class="emoji-picker" style="display: none;"></div>
+
                         <input type="text" id="messageInput" class="message-input" placeholder="Type a message..." onkeypress="handleMessageKeyPress(event)">
-                        <button onclick="sendMessage()" class="btn btn--primary send-btn">Send</button>
+                        <button onclick="sendMessage()" class="btn btn--primary send-btn" id="sendButton">Send</button>
                     </div>
                 </div>
             </div>
@@ -121,10 +113,61 @@
         <div class="loading-spinner"></div>
     </div>
 
+    <!-- Video Call Overlay -->
+    <div id="videoCallOverlay" class="video-call-overlay" style="display: none;">
+        <div class="video-container">
+            <video id="localVideo" autoplay playsinline muted></video>
+            <video id="remoteVideo" autoplay playsinline></video>
+        </div>
+        <div id="callStatus" class="call-status">Ringing...</div>
+        <div class="call-controls">
+            <button id="endCallButton" onclick="endVideoCall()" class="btn btn--secondary">End Call</button>
+        </div>
+    </div>
+
+    <!-- Incoming Call Modal -->
+    <div id="incomingCallModal" class="incoming-call-modal" style="display: none;">
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="settings-modal" style="display: none;">
+        <div class="settings-content">
+            <div class="settings-header">
+                <h2>Profile Settings</h2>
+                <button onclick="hideSettingsModal()" class="btn btn--secondary btn--icon">&times;</button>
+            </div>
+            <div class="settings-body">
+                <div class="form-group">
+                    <label class="form-label">Choose Your Avatar</label>
+                    <div id="avatarSelectionGrid" class="avatar-selection-grid"></div>
+                </div>
+                <hr class="divider">
+                <div class="form-group">
+                    <label class="form-label">Full Name</label>
+                    <input type="text" id="settingsName" class="form-control" disabled title="Your name cannot be changed.">
+                </div>
+                <hr class="divider">
+                <label class="form-label">Change PIN</label>
+                 <div class="form-group">
+                    <input type="password" id="currentPin" class="form-control" placeholder="Current PIN" maxlength="4" pattern="\d{4}" inputmode="numeric">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <input type="password" id="newPin" class="form-control" placeholder="New 4-digit PIN" maxlength="4" pattern="\d{4}" inputmode="numeric">
+                </div>
+            </div>
+            <div class="settings-footer">
+                <div id="settingsError" class="error-message"></div>
+                <button onclick="hideSettingsModal()" class="btn btn--secondary">Cancel</button>
+                <button onclick="saveSettings()" class="btn btn--primary">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
     
     <!-- Application JavaScript -->
     <script src="app.js"></script>
