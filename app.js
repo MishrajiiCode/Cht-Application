@@ -178,7 +178,7 @@ async function handleLoginOrRegister() {
       });
 
       console.log('User registered successfully:', userId);
-      await initializeUserSession(userId);
+      // The onAuthStateChanged listener will handle session initialization.
 
     } else {
       // --- User EXISTS: Attempt to log in ---
@@ -201,7 +201,7 @@ async function handleLoginOrRegister() {
       const userId = userCredential.user.uid;
 
       console.log('User logged in successfully:', userId);
-      await initializeUserSession(userId);
+      // The onAuthStateChanged listener will handle session initialization.
     }
   } catch (error) {
     console.error('Login error:', error);
@@ -473,18 +473,28 @@ async function openChat(user) {
   if (activeUserListener) activeUserListener();
   activeUserListener = db.collection('users').doc(activeChat.uid).onSnapshot(doc => {
       const updatedUser = { uid: doc.id, ...doc.data() };
-      activeChat = updatedUser; // Update activeChat with fresh data
+      activeChat = updatedUser; 
       updateVideoCallButton(updatedUser);
+
+      // Update user status in the chat header
+      const statusElement = document.getElementById('chatUserStatus');
+      if (isUserOnline(updatedUser)) {
+        statusElement.textContent = 'Online';
+        statusElement.classList.add('online');
+      } else {
+        statusElement.textContent = `Last seen ${formatTimestamp(updatedUser.lastSeen)}`;
+        statusElement.classList.remove('online');
+      }
   });
 
   const chatId = getChatId(currentUser.uid, activeChat.uid);
   const chatRef = db.collection('chats').doc(chatId);
 
   // Listen for typing indicator changes
+  const typingIndicator = document.getElementById('typingIndicator');
   typingIndicatorListener = chatRef.onSnapshot(doc => {
     if (doc.exists) {
       const chatData = doc.data();
-      const typingIndicator = document.getElementById('typingIndicator');
       if (chatData.typingUser === activeChat.uid && chatData.isTyping) {
         typingIndicator.style.display = 'block';
       } else {
@@ -520,6 +530,21 @@ async function openChat(user) {
 
   // Load messages
   loadMessages();
+
+  // Add scroll listener for the "Scroll to Bottom" button
+  const messagesContainer = document.getElementById('messagesContainer');
+  const scrollToBottomBtn = document.getElementById('scrollToBottomBtn');
+  
+  messagesContainer.onscroll = () => {
+    // Show button if user has scrolled up more than 300px
+    if (messagesContainer.scrollHeight - messagesContainer.scrollTop > messagesContainer.clientHeight + 300) {
+      scrollToBottomBtn.style.display = 'block';
+    } else {
+      scrollToBottomBtn.style.display = 'none';
+    }
+  };
+
+  scrollToBottomBtn.onclick = () => messagesContainer.scrollTo({ top: messagesContainer.scrollHeight, behavior: 'smooth' });
 }
 
 function loadMessages() {
@@ -532,6 +557,11 @@ function loadMessages() {
     .orderBy('timestamp', 'asc')
     .onSnapshot(snapshot => {
       const messagesContainer = document.getElementById('messagesContainer');
+      const isScrolledToBottom = messagesContainer.scrollHeight - messagesContainer.clientHeight <= messagesContainer.scrollTop + 300;
+
+      if (snapshot.empty) {
+        messagesContainer.innerHTML = '<div class="empty-state-content" style="padding: var(--space-20);"><p>No messages yet. Start the conversation!</p></div>';
+      }
       
       snapshot.docChanges().forEach(change => {
         if (change.type === 'added') {
@@ -545,8 +575,10 @@ function loadMessages() {
         }
       });
 
-      // Scroll to bottom
-      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      // Scroll to bottom only if the user was already at the bottom
+      if (isScrolledToBottom) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+      }
     }, error => {
       console.error('Error listening to messages:', error);
     });
@@ -826,7 +858,7 @@ function showSettingsModal() {
   clearError('settingsError');
 
   // Populate with current user data
-  document.getElementById('settingsName').value = currentUser.name;
+  document.getElementById('settingsName').textContent = currentUser.name;
 
   // Populate avatar selection grid
   const avatarGrid = document.getElementById('avatarSelectionGrid');
@@ -865,17 +897,8 @@ async function saveSettings() {
   showLoading(true);
   clearError('settingsError');
 
-  const newName = document.getElementById('settingsName').value.trim();
-
-  if (!newName) {
-    showError('settingsError', 'Name cannot be empty.');
-    showLoading(false);
-    return;
-  }
-
   try {
     const updateData = {
-      name: newName,
       avatarUrl: selectedAvatarUrl,
     };
 
@@ -913,9 +936,6 @@ async function saveSettings() {
     }
 
     // Since name is the unique ID, we don't allow changing it.
-    // We only update the avatar and potentially the PIN.
-    delete updateData.name;
-
     await db.collection('users').doc(currentUser.uid).update(updateData);
 
     // Update local currentUser object
@@ -946,6 +966,7 @@ async function saveSettings() {
 
 function showAboutModal() {
   document.getElementById('aboutModal').style.display = 'flex';
+  document.getElementById('appVersion').textContent = `Version ${APP_CONFIG.version}`;
 }
 
 function hideAboutModal() {
@@ -1289,3 +1310,4 @@ auth.onAuthStateChanged(async (user) => {
 console.log('Chat Application initialized');
 
 initializeEmojiPicker();
+
