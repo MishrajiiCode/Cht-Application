@@ -830,7 +830,7 @@ document.getElementById('messageInput').addEventListener('blur', () => {
 
 document.getElementById('messageInput').addEventListener('keydown', () => {
    // If the user presses the 'Enter' key, stop the typing indicator
-   if (event.key === 'Enter') {
+   if (event.key === 'Enter' && !event.shiftKey) {
       setTypingStatus(false);
    }
 });
@@ -1045,7 +1045,11 @@ async function startVideoCall() {
     localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
   } catch (error) {
     console.error("Error accessing media devices.", error);
-    alert("Could not access camera and microphone. Please check permissions.");
+    let errorMessage = "Could not access camera and microphone. Please ensure you have granted permission in your browser settings.";
+    if (error.name === 'NotAllowedError' || error.name === 'NotFoundError') {
+      errorMessage = "Camera/microphone access is required for video calls. If you are using the installed app, this feature may not be supported. Please try using Sync in your mobile web browser (like Chrome or Safari) instead.";
+    }
+    alert(errorMessage);
     document.getElementById('videoCallOverlay').style.display = 'none';
     return;
   }
@@ -1165,7 +1169,11 @@ async function answerCall(callId, offerString) {
     localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
   } catch (error) {
     console.error("Error accessing media devices.", error);
-    alert("Could not access camera and microphone. Please check permissions.");
+    let errorMessage = "Could not access camera and microphone. Please ensure you have granted permission in your browser settings.";
+    if (error.name === 'NotAllowedError' || error.name === 'NotFoundError') {
+      errorMessage = "Camera/microphone access is required for video calls. If you are using the installed app, this feature may not be supported. Please try using Sync in your mobile web browser (like Chrome or Safari) instead.";
+    }
+    alert(errorMessage);
     document.getElementById('videoCallOverlay').style.display = 'none';
     declineCall(callId); // Decline the call if media is not available
     return;
@@ -1310,4 +1318,3 @@ auth.onAuthStateChanged(async (user) => {
 console.log('Chat Application initialized');
 
 initializeEmojiPicker();
-
